@@ -6,6 +6,11 @@ variable "agent_count" {
   default = 2
 }
 
+
+variable "pool_name" {
+  default = "pocakspool"
+}
+
 variable "dns_prefix" {
   default = "pocaksdns"
 }
