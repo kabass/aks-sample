@@ -51,14 +51,25 @@ spec:
       - image: rodart/poc-aks:1.0
         name: poc-aks-ctr
         env:
-        - name: DATASOURCE_HOST # à mettre dans un ConfigMap
-          value: localhost
-        - name: DATASOURCE_PORT  # à mettre dans un ConfigMap
-          value: 3306
+        - name: DATASOURCE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: poc-aks-mysql-cm
+              key: host
+        - name: DATASOURCE_PORT        
+          valueFrom:
+            configMapKeyRef:
+              name: poc-aks-mysql-cm
+              key: port
+        - name: DATASOURCE_LOGIN
+          valueFrom:
+            secretKeyRef:
+              name: poc-aks-mysql-cred
+              key: username
         - name: DATASOURCE_PWD
           valueFrom:
             secretKeyRef:
-              name: mysql-pass
+              name: poc-aks-mysql-cred
               key: password
         ports:
         - containerPort: 80
