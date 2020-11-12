@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: poc-aks-frontend-service
+  labels:
+    app: poc-aks
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: poc-aks
+    tier: frontend
+  type: LoadBalancer
+  
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frontend-pv-claim
+  labels:
+    app: poc-aks
+spec:
+  storageClassName: poc-aks-azurefile
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: poc-aks-frontend
+  labels:
+    app: poc-aks
+spec:
+  selector:
+    matchLabels:
+      app: poc-aks
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: poc-aks
+        tier: frontend
+    spec:
+      containers:
+      - image: rodart/poc-aks:1.0
+        name: poc-aks-ctr
+        env:
+        - name: DATASOURCE_HOST # à mettre dans un ConfigMap
+          value: localhost
+        - name: DATASOURCE_PORT  # à mettre dans un ConfigMap
+          value: 3306
+        - name: DATASOURCE_PWD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: 80
+          name: poc-aks
+        volumeMounts:
+        - name: frontend-persistent-storage
+          mountPath: /app/logs
+      volumes:
+      - name: frontend-persistent-storage
+        persistentVolumeClaim:
+          claimName: frontend-pv-claim
+      

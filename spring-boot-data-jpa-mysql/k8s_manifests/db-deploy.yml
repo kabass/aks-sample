@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: poc-aks-mysql-service
+  labels:
+    app: poc-aks
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: poc-aks
+    tier: db
+  clusterIP: None
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    app: poc-aks
+spec:
+  storageClassName: poc-aks-azurefile
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: poc-aks-mysql
+  labels:
+    app: poc-aks
+spec:
+  selector:
+    matchLabels:
+      app: poc-aks
+      tier: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: poc-aks
+        tier: db
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: poc-aks-ctr
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pass
+              key: password
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
