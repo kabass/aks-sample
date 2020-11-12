@@ -1,5 +1,5 @@
 FROM openjdk:12
-ADD ../target/*.jar /app/
+ADD ../target/*.jar /app/poc-aks.jar
 EXPOSE 80
 VOLUME /app/logs
-ENTRYPOINT ["java", "-jar", "user-mysql.jar"]
+ENTRYPOINT ["java", "-jar", "/app/poc-aks.jar"]
