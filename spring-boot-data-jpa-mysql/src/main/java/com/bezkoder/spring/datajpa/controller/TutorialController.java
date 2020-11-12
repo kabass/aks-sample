@@ -3,6 +3,8 @@ package com.bezkoder.spring.datajpa.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,17 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bezkoder.spring.datajpa.model.Tutorial;
 import com.bezkoder.spring.datajpa.repository.TutorialRepository;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class TutorialController {
 
 	@Autowired
 	TutorialRepository tutorialRepository;
+	private static final Logger LOGGER= Logger.getLogger("poc_aks_logger");
 
 	@GetMapping("/tutorials")
 	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
 		try {
+
+			LOGGER.info("getting all tutorials");
 			List<Tutorial> tutorials = new ArrayList<Tutorial>();
 
 			if (title == null)
@@ -42,9 +47,11 @@ public class TutorialController {
 			if (tutorials.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
-
+			LOGGER.info(tutorials.toString());
 			return new ResponseEntity<>(tutorials, HttpStatus.OK);
 		} catch (Exception e) {
+
+			LOGGER.log(Level.SEVERE, e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -62,11 +69,15 @@ public class TutorialController {
 
 	@PostMapping("/tutorials")
 	public ResponseEntity<Tutorial> createTutorial(@RequestBody Tutorial tutorial) {
+
+		LOGGER.info("putting tutotial "+tutorial.toString());
 		try {
 			Tutorial _tutorial = tutorialRepository
 					.save(new Tutorial(tutorial.getTitle(), tutorial.getDescription(), false));
 			return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
 		} catch (Exception e) {
+
+			LOGGER.log(Level.SEVERE, e.getMessage());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -92,6 +103,7 @@ public class TutorialController {
 			tutorialRepository.deleteById(id);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -102,6 +114,7 @@ public class TutorialController {
 			tutorialRepository.deleteAll();
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage());
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

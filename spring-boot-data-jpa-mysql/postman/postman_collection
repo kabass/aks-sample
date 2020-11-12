@@ -1,0 +1,33 @@
+{
+	"variables": [],
+	"info": {
+		"name": "poc_aks",
+		"_postman_id": "344f7087-18ce-2883-27e7-5f2c3f67bb3c",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET",
+			"request": {
+				"url": "http://localhost:8080/api/tutorials",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "INSERT",
+			"request": {
+				"url": "http://localhost:8080/api/tutorials",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
