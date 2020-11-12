@@ -1,0 +1,57 @@
+TP AKS
+------
+
+Cluster AKS 
+ - TF
+ - 1 Pool de 2 noeuds
+ - Linux
+ - ...
+ - utilisation de network private au lieu de kunenet
+ - utilisation d'un compte technique pour deploiement
+
+- Appli Java 2 Tiers Hybrid (App + DB classique)
+  - DB: MySQL
+	- Storage : PV, PVC, Storage Class
+	- Secret, configMap
+  - App front
+    - Ingress
+	- Load Balancer
+	- DNS
+	- Certificats
+
+- Keyvault
+  - Clé d'encryptage Kubernetes
+  - Clé de base de données (connection string)
+
+- Monitoring: Log Analytics & Insighgts
+  - log aplicatifs
+  - log performance
+  - log/event connections (events :activity logs)
+  - log composants
+  utilisez le enable addons
+
+- Network
+  - Test accès (depuis un pod du cluster) à un AppService qui utilise un "private endpoint" dans un VNET.
+  - Test Storage Account : accès VNET restriction
+
+- Security
+  - Users access
+  - Admin access
+  - Pods access on Azure Infra (Keyvault, ...)
+
+- Azure Devops
+  - CI
+  - CD
+  - Helm
+
+- Supervision, qualité de code, sécurité
+  - Sonar
+  - SonarQube
+  
+- Update and Upgrades
+  - Kurde pour aider à reboot les VM updates par Azure
+  
+- Scaling
+  - scale down to 0 pour les node pools supplémentaires
+  
+- Kubernetes dashboard et Kubernetes resource viewer
