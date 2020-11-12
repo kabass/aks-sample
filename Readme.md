@@ -46,5 +46,6 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
       2) mvn clean package
    2) Build image  
       1) cd spring-boot-data-jpa-mysql
-      2) docker build -t rodart/poc-aks:1.0 spring-boot-data-jpa-mysql/docker
+      2) sudo docker build -t rodart/poc-aks:1.0 .
    3) Push
+      1) sudo docker push rodart/poc-aks:1.0
