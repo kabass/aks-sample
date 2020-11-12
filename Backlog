@@ -48,6 +48,8 @@ Cluster AKS
   - Sonar
   - SonarQube
   
+- Tests Units
+
 - Update and Upgrades
   - Kurde pour aider à reboot les VM updates par Azure
   
