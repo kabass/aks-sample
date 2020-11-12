@@ -1,4 +1,4 @@
-resource "azurerm_resource_group" "k8s" {
+resource "azurerm_resource_group" "k8s_rg" {
   name     = var.resource_group_name
   location = var.location
 }
@@ -11,14 +11,14 @@ resource "azurerm_log_analytics_workspace" "test" {
   # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
   name                = "${var.log_analytics_workspace_name}-${random_id.log_analytics_workspace_name_suffix.dec}"
   location            = var.log_analytics_workspace_location
-  resource_group_name = azurerm_resource_group.k8s.name
+  resource_group_name = azurerm_resource_group.k8s_rg.name
   sku                 = var.log_analytics_workspace_sku
 }
 
 resource "azurerm_log_analytics_solution" "test" {
   solution_name         = "ContainerInsights"
   location              = azurerm_log_analytics_workspace.test.location
-  resource_group_name   = azurerm_resource_group.k8s.name
+  resource_group_name   = azurerm_resource_group.k8s_rg.name
   workspace_resource_id = azurerm_log_analytics_workspace.test.id
   workspace_name        = azurerm_log_analytics_workspace.test.name
 
@@ -28,10 +28,10 @@ resource "azurerm_log_analytics_solution" "test" {
   }
 }
 
-resource "azurerm_kubernetes_cluster" "k8s" {
+resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   name                = var.cluster_name
-  location            = azurerm_resource_group.k8s.location
-  resource_group_name = azurerm_resource_group.k8s.name
+  location            = azurerm_resource_group.k8s_rg.location
+  resource_group_name = azurerm_resource_group.k8s_rg.name
   dns_prefix          = var.dns_prefix
 
   linux_profile {
