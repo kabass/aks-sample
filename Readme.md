@@ -21,6 +21,8 @@ terraform apply
 4) Connect to kubernetes cluster
 az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
 
+4) Create registry in azure
+
 
 5) Create sample java/maven project
    the project use mysql as datasource
@@ -48,4 +50,5 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
       1) cd spring-boot-data-jpa-mysql
       2) sudo docker build -t rodart/poc-aks:1.0 .
    3) Push
-      1) sudo docker push rodart/poc-aks:1.0
+      1) sudo docker push pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
+
