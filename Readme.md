@@ -48,7 +48,12 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
       2) mvn clean package
    2) Build image  
       1) cd spring-boot-data-jpa-mysql
-      2) sudo docker build -t rodart/poc-aks:1.0 .
+      2) sudo docker build -t poc-aks:1.0 .
    3) Push
-      1) sudo docker push pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
+      1) Create a registry account on azure (ACR) : pocaksacr01
+         activate the admin user : username (pocaksacr01) and password (xxxxxx) are created and visible on "Access keys" menu
+      2) Tag the image for registry: docker tag poc-aks:1.0 pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
+      1) push the image into the registry
+          - docker login pocaksacr01.azurecr.io
+          - sudo docker push pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
 

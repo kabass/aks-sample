@@ -38,6 +38,7 @@ Cluster AKS
   - Users access
   - Admin access
   - Pods access on Azure Infra (Keyvault, ...)
+  - Use Policies to ckeck repository images
 
 - Azure Devops
   - CI
