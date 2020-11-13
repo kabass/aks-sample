@@ -9,6 +9,7 @@ Cluster AKS
  - utilisation de network private au lieu de kunenet
  - utilisation d'un compte technique pour deploiement
  - registry ACR
+- Utilisation de KeyVault pour releaser AKS
 
 - Appli Java 2 Tiers Hybrid (App + DB classique)
   - DB: MySQL
