@@ -36,6 +36,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
       5) create deployment for database
       6) create service for database
    2) create front deployment
+      0) create registry secret : kubectl create secret docker-registry regcred --docker-server=pocaksacr01.azurecr.io --docker-username=pocaksacr01 --docker-password=xxxx --docker-email=toto@gmail.com
       1) create config map fro environment
       2) create secret for database password
       3) create pvc
