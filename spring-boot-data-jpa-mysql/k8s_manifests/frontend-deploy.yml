@@ -47,8 +47,10 @@ spec:
         app: poc-aks
         tier: frontend
     spec:
+      imagePullSecrets:
+      - name: regcred
       containers:
-      - image: rodart/poc-aks:1.0
+      - image: pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
         name: poc-aks-ctr
         env:
         - name: DATASOURCE_HOST

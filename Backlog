@@ -8,6 +8,7 @@ Cluster AKS
  - ...
  - utilisation de network private au lieu de kunenet
  - utilisation d'un compte technique pour deploiement
+ - registry ACR
 
 - Appli Java 2 Tiers Hybrid (App + DB classique)
   - DB: MySQL
@@ -58,3 +59,5 @@ Cluster AKS
   - scale down to 0 pour les node pools supplémentaires
   
 - Kubernetes dashboard et Kubernetes resource viewer
+
+-Vérifiez si Kubernetes propose de configurer un Registry (Docker ou ACR) par défaut

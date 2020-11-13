@@ -52,7 +52,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
       2) sudo docker build -t poc-aks:1.0 .
    3) Push
       1) Create a registry account on azure (ACR) : pocaksacr01
-         activate the admin user : username (pocaksacr01) and password (xxxxxx) are created and visible on "Access keys" menu
+         activate the "admin user" : username (pocaksacr01) and password (xxxxxx) are created and visible on "Access keys" menu
       2) Tag the image for registry: docker tag poc-aks:1.0 pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
       1) push the image into the registry
           - docker login pocaksacr01.azurecr.io
