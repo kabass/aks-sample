@@ -3,12 +3,14 @@ TP AKS
 
 Cluster AKS 
  - TF
+   + Use SPN on env
+   - Use SPN on Keyvault
  - 1 Pool de 2 noeuds
- - Linux
  - ...
  - utilisation de network private au lieu de kunenet
  - utilisation d'un compte technique pour deploiement
  - registry ACR
+   - use Docker
 - Utilisation de KeyVault pour releaser AKS
 
 - Appli Java 2 Tiers Hybrid (App + DB classique)
@@ -24,6 +26,7 @@ Cluster AKS
 - Keyvault
   - Clé d'encryptage Kubernetes
   - Clé de base de données (connection string)
+  - Certificates
 
 - Monitoring: Log Analytics & Insighgts
   - log aplicatifs
@@ -36,7 +39,7 @@ Cluster AKS
   - Test accès (depuis un pod du cluster) à un AppService qui utilise un "private endpoint" dans un VNET.
   - Test Storage Account : accès VNET restriction
 
-- Automation account
++ Automation account
   delete cluster everyday at 9pm
 
 - Security
@@ -49,6 +52,9 @@ Cluster AKS
   - CI
   - CD
   - Helm
+
+- Container Registry
+  - validate images
 
 - Supervision, qualité de code, sécurité
   - Sonar
@@ -64,4 +70,4 @@ Cluster AKS
   
 - Kubernetes dashboard et Kubernetes resource viewer
 
--Vérifiez si Kubernetes propose de configurer un Registry (Docker ou ACR) par défaut
+- Vérifiez si Kubernetes propose de configurer un Registry (Docker ou ACR) par défaut
