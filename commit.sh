@@ -1,4 +1,7 @@
 #!/bin/sh
+
+if [[ $1 ]] then;
+  echo "please specify the commit message and retry"
 git status
 git add .
 git commit -m $1
