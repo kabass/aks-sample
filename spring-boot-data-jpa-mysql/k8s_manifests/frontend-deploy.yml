@@ -29,6 +29,7 @@ spec:
 
 ---
 apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: poc-aks-frontend
   labels:
@@ -52,11 +53,16 @@ spec:
       - image: pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
         name: poc-aks-ctr
         env:
-        - name: DATASOURCE_HOST
+        - name: DATASOURCE_URL
           valueFrom:
             configMapKeyRef:
               name: poc-aks-mysql-cm
               key: host
+        - name: DATASOURCE_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: poc-aks-mysql-cm
+              key: db_name
         - name: DATASOURCE_PORT        
           valueFrom:
             configMapKeyRef:
@@ -66,7 +72,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: poc-aks-mysql-cred
-              key: username
+              key: user
         - name: DATASOURCE_PWD
           valueFrom:
             secretKeyRef:

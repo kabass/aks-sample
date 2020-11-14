@@ -6,3 +6,4 @@ metadata:
 data:
   host: 'localhost'
   port: '3306'
+  db_name: 'poc_aks_db'

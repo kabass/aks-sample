@@ -36,6 +36,9 @@ Cluster AKS
   - Test accès (depuis un pod du cluster) à un AppService qui utilise un "private endpoint" dans un VNET.
   - Test Storage Account : accès VNET restriction
 
+- Automation account
+  delete cluster everyday at 9pm
+
 - Security
   - Users access
   - Admin access

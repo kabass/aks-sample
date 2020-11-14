@@ -50,8 +50,22 @@ spec:
       containers:
       - image: mysql:5.6
         name: poc-aks-ctr
+        args:
+        # - "--ignore-db-dir"
+        # - "lost+found"
+        - --default-authentication-plugin=mysql_native_password
         env:
         - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: poc-aks-mysql-cred
+              key: root-password
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: poc-aks-mysql-cred
+              key: user
+        - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
               name: poc-aks-mysql-cred
