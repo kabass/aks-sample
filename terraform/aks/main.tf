@@ -34,12 +34,12 @@ data "azurerm_key_vault" "keyvault" {
 }
 
 data "azurerm_key_vault_secret" "sp_id" {
-  name      = "poc-aks-sp-id"
+  name         = "poc-aks-sp-id"
   key_vault_id = data.azurerm_key_vault.keyvault.id
 }
 
 data "azurerm_key_vault_secret" "sp_secret" {
-  name      = "poc-aks-sp-secret"
+  name         = "poc-aks-sp-secret"
   key_vault_id = data.azurerm_key_vault.keyvault.id
 }
 

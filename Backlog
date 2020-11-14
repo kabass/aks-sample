@@ -28,7 +28,7 @@ Cluster AKS
   - Clé de base de données (connection string)
   - Certificates
 
-- Monitoring: Log Analytics & Insighgts
+- Telemetry with Azure Monitor: Log Analytics & Insighgts
   - log aplicatifs
   - log performance
   - log/event connections (events :activity logs)

@@ -58,3 +58,10 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
           - docker login pocaksacr01.azurecr.io
           - sudo docker push pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
 
+8) Helm
+  1) install Helm
+  pip3 install boto3 --user
+  2) initializing Helm: insinstalls the Tiller Server onto a Kubernetes clustertall 
+  kubectl cluster-info
+  helm init
+
