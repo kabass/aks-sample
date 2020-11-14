@@ -1,8 +1,8 @@
-if "%1"=="" goto :error
+if %1=="" goto :error
 
 git status
 git add .
-git commit -m %1
+git commit -m "%1"
 git pull
 git status
 git commit -m "merge"
