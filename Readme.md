@@ -75,7 +75,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
     - render the template locally, without a Tiller Server, for quick feedback
     helm template ./poc-aks-helm 
   6)installation/release
-    helm install poc-aks-helm ./poc-aks-helm
+    helm install ./poc-aks-helm --generate-name
     or
     helm upgrade poc-aks-helm ./poc-aks-helm
   7)see which charts are installed
