@@ -60,8 +60,25 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
 
 8) Helm
   1) install Helm
-  pip3 install boto3 --user
+    https://helm.sh/docs/intro/install/
   2) initializing Helm: insinstalls the Tiller Server onto a Kubernetes clustertall 
-  kubectl cluster-info
-  helm init
-
+    kubectl cluster-info
+    #helm init  # noneed for helm3
+  3)Creating a Chart
+    helm create poc-aks-helm
+  4)- Creating Template
+    we have to edit manually the template files
+    - Providing Values
+    edit value files
+  5)- runs a battery of tests to ensure that the chart is well-formed
+    helm lint ./poc-aks-helm
+    - render the template locally, without a Tiller Server, for quick feedback
+    helm template ./poc-aks-helm 
+  6)installation/release
+    helm install poc-aks-helm ./poc-aks-helm
+    or
+    helm upgrade poc-aks-helm ./poc-aks-helm
+  7)see which charts are installed
+    helm ls --all
+  8)delete all the release
+    helm delete --purge poc-aks-helm
