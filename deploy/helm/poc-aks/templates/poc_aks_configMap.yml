@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: poc-aks-mysql-cm
-  namespace: default
+  name: {{ include "poc-aks.fullname.frontend" . }}-cm
+  namespace: {{ .Values.namespace }}
 data:
-  host: 'poc-aks-mysql-service'
-  port: '3306'
-  db_name: 'poc_aks_db'
+  host: {{ include "poc-aks.fullname.db" . }}-service
+  port: {{ .Values.service.db.port }}
+  db_name: {{ .Values.service.db.database_name }}

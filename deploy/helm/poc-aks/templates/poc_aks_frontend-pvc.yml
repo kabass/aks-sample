@@ -1,13 +1,14 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: frontend-pv-claim
+  name: {{ include "poc-aks.fullname.frontend" . }}-pvc
+  namespace: {{ .Values.namespace }}
   labels:
-    app: poc-aks
+    {{- include "poc-aks.labels.frontend" . | nindent 4 }}
 spec:
-  storageClassName: poc-aks-azurefile
+  storageClassName: {{ include "poc-aks.name" . }}-sc
   accessModes:
-    - ReadWriteMany
+    - {{ .Values.storageClass.accessModes }}
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.storageClass.storage.frontend }}
