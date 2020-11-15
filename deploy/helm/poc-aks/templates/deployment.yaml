@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "poc-aks-helm.fullname" . }}
+  name: {{ include "poc-aks.fullname" . }}
   labels:
-    {{- include "poc-aks-helm.labels" . | nindent 4 }}
+    {{- include "poc-aks.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "poc-aks-helm.selectorLabels" . | nindent 6 }}
+      {{- include "poc-aks.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "poc-aks-helm.selectorLabels" . | nindent 8 }}
+        {{- include "poc-aks.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "poc-aks-helm.serviceAccountName" . }}
+      serviceAccountName: {{ include "poc-aks.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
