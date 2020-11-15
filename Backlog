@@ -18,7 +18,7 @@ Cluster AKS
 	- Storage : PV, PVC, Storage Class
 	- Secret, configMap
   - App front
-    - Ingress
+    - Ingress & TLS
 	- Load Balancer
 	- DNS
 	- Certificats

@@ -61,7 +61,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
 8) Helm
   1) install Helm
     https://helm.sh/docs/intro/install/
-  2) initializing Helm: insinstalls the Tiller Server onto a Kubernetes clustertall 
+  2) initializing Helm: installs the Tiller Server onto a Kubernetes clustertall 
     kubectl cluster-info
     #helm init  # noneed for helm3
   3)Creating a Chart
