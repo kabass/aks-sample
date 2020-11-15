@@ -4,6 +4,6 @@ metadata:
   name: poc-aks-mysql-cm
   namespace: default
 data:
-  host: 'localhost'
+  host: 'poc-aks-mysql-service'
   port: '3306'
   db_name: 'poc_aks_db'

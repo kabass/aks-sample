@@ -7,6 +7,7 @@ metadata:
 spec:
   ports:
     - port: 80
+      targetPort: 8080
   selector:
     app: poc-aks
     tier: frontend
@@ -68,7 +69,7 @@ spec:
             configMapKeyRef:
               name: poc-aks-mysql-cm
               key: port
-        - name: DATASOURCE_LOGIN
+        - name: DATASOURCE_USERNAME
           valueFrom:
             secretKeyRef:
               name: poc-aks-mysql-cred
@@ -79,7 +80,7 @@ spec:
               name: poc-aks-mysql-cred
               key: password
         ports:
-        - containerPort: 80
+        - containerPort: 8080
           name: poc-aks
         volumeMounts:
         - name: frontend-persistent-storage
