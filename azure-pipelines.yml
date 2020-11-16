@@ -65,7 +65,7 @@ stages:
               
           - task: Docker@2
             inputs:
-              containerRegistry: 'poc_aks_container_registry'
+              containerRegistry: 'pokackacr01'
               repository: 'pocaksacr01/poc-aks'
               command: 'buildAndPush'
               Dockerfile: 'spring-boot-data-jpa-mysql/Dockerfile'
