@@ -36,7 +36,7 @@ public class TutorialController {
 	public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(required = false) String title) {
 		try {
 
-			LOGGER.info("getting all tutorials update 2");
+			LOGGER.info("getting all tutorials update 3");
 			List<Tutorial> tutorials = new ArrayList<Tutorial>();
 
 			if (title == null)
