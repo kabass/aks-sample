@@ -1,61 +1,58 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: poc-aks-frontend
+  name: {{ include "poc-aks.fullname.frontend" . }}-deploy
   labels:
-    app: poc-aks
+    app: {{- include "poc-aks.labels.frontend" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: poc-aks
-      tier: frontend
+      {{- include "poc-aks.labels.frontend" . | nindent 6 }}
   strategy:
-    type: Recreate
+    type: {{ .Values.strategy }}
   template:
     metadata:
       labels:
-        app: poc-aks
-        tier: frontend
+        {{- include "poc-aks.selectorLabels.frontend" . | nindent 8 }}
     spec:
       imagePullSecrets:
-      - name: regcred
+      - name: {{ .Values.registrySecret }}
       containers:
-      - image: pocaksacr01.azurecr.io/pocaksacr01/poc-aks:1.0
-        name: poc-aks-ctr
+      - image: {{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag }}
+        name: {{ include "poc-aks.name.frontend" . }}
         env:
-        - name: DATASOURCE_URL
+        - name: {{ .Values.mysql.config.url.env }}
           valueFrom:
             configMapKeyRef:
-              name: poc-aks-mysql-cm
-              key: host
-        - name: DATASOURCE_DATABASE_NAME
+              name: {{ .Values.mysql.config.name }}
+              key: {{ .Values.mysql.config.url.key }}
+        - name: {{ .Values.mysql.config.port.env }}        
           valueFrom:
             configMapKeyRef:
-              name: poc-aks-mysql-cm
-              key: db_name
-        - name: DATASOURCE_PORT        
+              name: {{ .Values.mysql.config.name }}
+              key: {{ .Values.mysql.config.port.key }}
+        - name: {{ .Values.mysql.config.database.env }}
           valueFrom:
             configMapKeyRef:
-              name: poc-aks-mysql-cm
-              key: port
-        - name: DATASOURCE_USERNAME
+              name: {{ .Values.mysql.config.name }}
+              key: {{ .Values.mysql.config.database.key }}
+        - name: {{ .Values.mysql.secret.userLogin.env.frontend }}
           valueFrom:
             secretKeyRef:
-              name: poc-aks-mysql-cred
-              key: user
-        - name: DATASOURCE_PWD
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.userLogin.key }}
+        - name: {{ .Values.mysql.secret.userPassword.env.frontend }}
           valueFrom:
             secretKeyRef:
-              name: poc-aks-mysql-cred
-              key: password
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.userPassword.key }}
         ports:
-        - containerPort: 8080
-          name: poc-aks
+        - containerPort: {{ .Values.service.frontend.port }}
+          name: {{ include "poc-aks.name.frontend" . }}
         volumeMounts:
-        - name: frontend-persistent-storage
-          mountPath: /app/logs
+          {{- toYaml .Values.volume.frontend | nindent 10 }}
       volumes:
-      - name: frontend-persistent-storage
+      - name: {{ .Values.volume.frontend.name }}
         persistentVolumeClaim:
-          claimName: frontend-pv-claim
+          claimName: {{ include "poc-aks.fullname.frontend" . }}-pvc
       

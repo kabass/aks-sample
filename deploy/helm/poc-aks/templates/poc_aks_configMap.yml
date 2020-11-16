@@ -6,4 +6,4 @@ metadata:
 data:
   host: {{ include "poc-aks.fullname.db" . }}-service
   port: {{ .Values.service.db.port }}
-  db_name: {{ .Values.service.db.database_name }}
+  db_name: {{ .Values.mysql.database_name }}

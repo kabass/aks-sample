@@ -56,7 +56,6 @@ service:
 
 mysql:
   database_name: poc_aks_db
-  path: /var/lib/mysql
   args: --default-authentication-plugin=mysql_native_password
   secret: 
     name: poc-aks-mysql-cred
@@ -78,9 +77,23 @@ mysql:
         frontend: DATASOURCE_PWD
   config:
     name: poc-aks-mysql-cm
+    url:
+      key: host
+      env: DATASOURCE_URL
+    port:
+      key: port
+      env: DATASOURCE_PORT
+    database:
+      key: db-name
+      env: DATASOURCE_DATABASE_NAME
 
-webapp:
-  path: /app/logs
+volume:
+  db:
+    name: mysql-persistent-storage
+    mountPath: /var/lib/mysql
+  frontend:
+    name: webapp-persistent-storage
+    mountPath: /app/logs
 
 ingress:
   enabled: false
@@ -130,3 +143,10 @@ storageClass:
   skuName: Standard_LRS
   mode: 0777
   id: 0
+
+registrySecret: 
+  name: regcred
+  docker-server: pocaksacr01.azurecr.io 
+  docker-username: pocaksacr01 
+  docker-password: xxxxxx 
+  docker-email: toto@gmail.com
