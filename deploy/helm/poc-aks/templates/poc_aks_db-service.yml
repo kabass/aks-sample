@@ -4,11 +4,10 @@ metadata:
   name: {{ include "poc-aks.fullname.db" . }}-service
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "poc-aks.labels.db" . | nindent 4 }}
+    {{- include "poc-aks.labels" . | nindent 4 }}
 spec:
   ports:
     - port: {{ .Values.service.db.port }}
   selector:
-    app: {{ include "poc-aks.name" . }}
-    tier: {{ include "poc-aks.name.db" . }}
+    {{- include "poc-aks.selectorLabels.db" . | nindent 4 }}
   type: {{ .Values.service.db.type }}

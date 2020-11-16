@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ include "poc-aks.fullname.frontend" . }}-cm
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "poc-aks.labels" . | nindent 4 }}
 data:
   host: {{ include "poc-aks.fullname.db" . }}-service
   port: {{ .Values.service.db.port }}

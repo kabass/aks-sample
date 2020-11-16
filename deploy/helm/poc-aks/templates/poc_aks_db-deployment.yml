@@ -40,7 +40,7 @@ spec:
         - containerPort: {{ .Values.service.db.port }}
           name: {{ include "poc-aks.name.db" . }}
         volumeMounts:
-          {{- toYaml .Values.volume.db | nindent 10 }}
+        - {{- toYaml .Values.volume.db | nindent 10 }}
       volumes:
       - name: {{ .Values.volume.db.name }}
         persistentVolumeClaim:

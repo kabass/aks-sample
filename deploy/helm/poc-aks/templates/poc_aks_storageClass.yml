@@ -3,6 +3,8 @@ kind: StorageClass
 metadata:
   name: {{ include "poc-aks.name" . }}-sc
   namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "poc-aks.labels" . | nindent 4 }}
 provisioner: kubernetes.io/azure-file
 mountOptions:
   - dir_mode={{ .Values.storageClass.mode }}

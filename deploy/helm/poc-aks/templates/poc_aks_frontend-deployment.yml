@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ include "poc-aks.fullname.frontend" . }}-deploy
   labels:
-    app: {{- include "poc-aks.labels.frontend" . | nindent 4 }}
+    {{- include "poc-aks.labels.frontend" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -50,7 +50,7 @@ spec:
         - containerPort: {{ .Values.service.frontend.port }}
           name: {{ include "poc-aks.name.frontend" . }}
         volumeMounts:
-          {{- toYaml .Values.volume.frontend | nindent 10 }}
+        - {{- toYaml .Values.volume.frontend | nindent 10 }}
       volumes:
       - name: {{ .Values.volume.frontend.name }}
         persistentVolumeClaim:

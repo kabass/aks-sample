@@ -4,7 +4,7 @@ metadata:
   name: {{ include "poc-aks.fullname.frontend" . }}-pvc
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "poc-aks.labels.frontend" . | nindent 4 }}
+    {{- include "poc-aks.labels" . | nindent 4 }}
 spec:
   storageClassName: {{ include "poc-aks.name" . }}-sc
   accessModes:

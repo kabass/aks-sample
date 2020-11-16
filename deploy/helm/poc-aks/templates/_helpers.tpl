@@ -45,6 +45,17 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Common labels
+*/}}
+{{- define "poc-aks.labels" -}}
+helm.sh/chart: {{ include "poc-aks.chart" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
 Common labels db
 */}}
 {{- define "poc-aks.labels.db" -}}

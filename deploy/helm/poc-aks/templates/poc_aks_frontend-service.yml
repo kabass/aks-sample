@@ -4,12 +4,11 @@ metadata:
   name: {{ include "poc-aks.fullname.frontend" . }}-service
   namespace: {{ .Values.namespace }}
   labels:
-    {{- include "poc-aks.labels.frontend" . | nindent 4 }}
+    {{- include "poc-aks.labels" . | nindent 4 }}
 spec:
   ports:
     - port: {{ .Values.service.frontend.port }}
       targetPort: {{ .Values.service.frontend.targetPort }}
   selector:
-    app: {{ include "poc-aks.name" . }}
-    tier: {{ include "poc-aks.name.frontend" . }}
+    {{- include "poc-aks.selectorLabels.frontend" . | nindent 4 }}
   type: {{ .Values.service.frontend.type }}
