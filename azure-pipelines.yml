@@ -61,3 +61,11 @@ stages:
               mavenAuthenticateFeed: false
               effectivePomSkip: false
               sonarQubeRunAnalysis: false
+              
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'poc_aks_container_registry'
+              repository: 'pocaksacr01'
+              command: 'buildAndPush'
+              Dockerfile: 'spring-boot-data-jpa-mysql/Dockerfile'
+              
