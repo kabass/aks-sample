@@ -47,9 +47,9 @@ stages:
 
 
   - stage: 'Build'
-    condition: eq(dependencies.CheckChanges.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
     jobs:
       - job: Build_Application_Image       
+        condition: eq(dependencies.CheckChanges.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
         displayName: 'Build application image'    
         dependsOn: CheckChanges # <- Important: Mark previous job as dependency        
         steps:
