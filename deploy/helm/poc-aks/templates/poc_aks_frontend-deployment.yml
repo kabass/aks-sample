@@ -7,13 +7,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      {{- include "poc-aks.labels.frontend" . | nindent 6 }}
+      {{- include "poc-aks.selectorLabels.frontend" . | nindent 6 }}
   strategy:
     type: {{ .Values.strategy }}
   template:
     metadata:
       labels:
-        {{- include "poc-aks.selectorLabels.frontend" . | nindent 8 }}
+        {{- include "poc-aks.labels.frontend" . | nindent 8 }}
     spec:
       imagePullSecrets:
       - name: {{ .Values.registrySecret }}

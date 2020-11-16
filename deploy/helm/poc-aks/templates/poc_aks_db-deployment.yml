@@ -7,13 +7,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-        {{- include "poc-aks.labels.db" . | nindent 6 }}
+        {{- include "poc-aks.selectorLabels.db" . | nindent 6 }}
   strategy:
     type: {{ .Values.strategy }}
   template:
     metadata:
       labels:
-        {{- include "poc-aks.selectorLabels.db" . | nindent 8 }}
+        {{- include "poc-aks.labels.db" . | nindent 8 }}
     spec:
       containers:
       - image: {{ .Values.image.db.repository }}:{{ .Values.image.db.tag }}
