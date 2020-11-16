@@ -7,5 +7,5 @@ metadata:
     {{- include "poc-aks.labels" . | nindent 4 }}
 data:
   host: {{ include "poc-aks.fullname.db" . }}-service
-  port: {{ .Values.service.db.port }}
+  port: '{{ .Values.service.db.port }}'
   db_name: {{ .Values.mysql.database_name }}
