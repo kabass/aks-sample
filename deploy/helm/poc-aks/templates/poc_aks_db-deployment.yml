@@ -3,47 +3,45 @@ kind: Deployment
 metadata:
   name: {{ include "poc-aks.fullname.db" . }}-deploy
   labels:
-    app: poc-aks
+    {{- include "poc-aks.labels.db" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-        app: {{ include "poc-aks.name" . }}
-        tier: {{ include "poc-aks.name.db" . }}
+        {{- include "poc-aks.labels.db" . | nindent 6 }}
   strategy:
-    type: Recreate
+    type: {{ .Values.strategy }}
   template:
     metadata:
       labels:
-        app: {{ include "poc-aks.name" . }}
-        tier: {{ include "poc-aks.name.db" . }}
+        {{- include "poc-aks.selectorLabels.db" . | nindent 8 }}
     spec:
       containers:
       - image: {{ .Values.image.db.repository }}:{{ .Values.image.db.tag }}
         name: {{ include "poc-aks.name.db" . }}
         args:
-        - --default-authentication-plugin=mysql_native_password
+        - {{ .Values.mysql.args }}
         env:
-        - name: MYSQL_ROOT_PASSWORD
+        - name: {{ .Values.mysql.secret.rootPassword.env }}
           valueFrom:
             secretKeyRef:
-              name: poc-aks-mysql-cred
-              key: root-password
-        - name: MYSQL_USER
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.rootPassword.key }}
+        - name: {{ .Values.mysql.secret.userLogin.env.db }}
           valueFrom:
             secretKeyRef:
-              name: poc-aks-mysql-cred
-              key: user
-        - name: MYSQL_PASSWORD
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.userLogin.key }}
+        - name:  {{ .Values.mysql.secret.userPassword.env.db }}
           valueFrom:
             secretKeyRef:
-              name: poc-aks-mysql-cred
-              key: password
+              name: {{ .Values.mysql.secret.name }}
+              key: {{ .Values.mysql.secret.userPassword.key }}
         ports:
-        - containerPort: 3306
-          name: mysql
+        - containerPort: {{ .Values.service.db.port }}
+          name: {{ include "poc-aks.name.db" . }}
         volumeMounts:
         - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
+          mountPath: {{ .Values.mysql.path }}
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:

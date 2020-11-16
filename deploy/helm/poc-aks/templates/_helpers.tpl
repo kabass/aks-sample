@@ -45,7 +45,7 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
-Common labels
+Common labels db
 */}}
 {{- define "poc-aks.labels.db" -}}
 helm.sh/chart: {{ include "poc-aks.chart" . }}
@@ -69,19 +69,19 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-Selector labels
+Selector labels db
 */}}
 {{- define "poc-aks.selectorLabels.db" -}}
-app: {{ include "poc-aks.name.db" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: {{ include "poc-aks.name" . }}
+app.kubernetes.io/tier: {{ include "poc-aks.name.db" . }}
 {{- end }}
 
 {{/*
 Selector labels frontend
 */}}
 {{- define "poc-aks.selectorLabels.frontend" -}}
-app.kubernetes.io/name: {{ include "poc-aks.name.frontend" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: {{ include "poc-aks.name" . }}
+app.kubernetes.io/tier: {{ include "poc-aks.name.frontend" . }}
 {{- end }}
 
 {{/*
