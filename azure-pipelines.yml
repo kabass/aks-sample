@@ -14,7 +14,8 @@ trigger:
       - azure-pipeline.yml
 
 stages:
-  - stage: 'Check Change'
+
+  - stage: 'Build'
     jobs:
       - job: CheckChanges
         displayName: 'Check Changes'
@@ -45,9 +46,6 @@ stages:
             name: check_changes
             displayName: 'Check source code changed files'
 
-
-  - stage: 'Build'
-    jobs:
       - job: Build_Application_Image       
         condition: eq(dependencies.CheckChanges.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
         displayName: 'Build application image'    
