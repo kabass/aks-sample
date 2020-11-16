@@ -13,7 +13,7 @@ trigger:
       - deploy/*
 
 stages:
-  - stage: 'Build'
+  - stage: 'Check Change'
     jobs:
       - job: CheckChanges
         displayName: 'Check Changes'
@@ -43,37 +43,14 @@ stages:
               fi
             name: check_changes
             displayName: 'Check source code changed files'
-          - bash: |
-              PATH_FILTER="deploy/"
-              CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
-              MATCH_COUNT=0
-
-              echo "Checking for file changes..."
-              for FILE in $CHANGED_FILES
-              do
-                if [[ $FILE == *$PATH_FILTER* ]]; then
-                  echo "MATCH:  ${FILE} changed"
-                  MATCH_FOUND=true
-                  MATCH_COUNT=$(($MATCH_COUNT+1))
-                else
-                  echo "IGNORE: ${FILE} changed"
-                fi
-              done
-
-              echo "$MATCH_COUNT match(es) for filter '$PATH_FILTER' found."
-              if [[ $MATCH_COUNT -gt 0 ]]; then
-                echo "##vso[task.setvariable variable=DEPLOY_CODE_CHANGED;isOutput=true]true"
-              else
-                echo "##vso[task.setvariable variable=DEPLOY_CODE_CHANGED;isOutput=true]false"
-              fi
-            name: check_changes
-            displayName: 'Check deploy code changed files'
 
 
+  - stage: 'Build'
+    condition: eq(dependencies.CheckChanges.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
+    jobs:
       - job: Build_Application_Image       
         displayName: 'Build application image'    
         dependsOn: CheckChanges # <- Important: Mark previous job as dependency        
-        condition: eq(dependencies.CheckChanges.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
         steps:
           - task: Maven@3
             inputs:
@@ -93,4 +70,16 @@ stages:
               repository: 'pocaksacr01/poc-aks'
               command: 'buildAndPush'
               Dockerfile: 'spring-boot-data-jpa-mysql/Dockerfile'
-              
+
+ # ---- BUILD STAGE
+  - stage: deploymentPublication
+    displayName: publish deployment
+    jobs:
+      - job: Publish
+        displayName: Publish
+        steps:
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.Repository.LocalPath)/deploy'
+              ArtifactName: '$(Build.BuildNumber)/deploy'
+              publishLocation: 'Container'
