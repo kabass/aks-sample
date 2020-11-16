@@ -78,6 +78,6 @@ stages:
         steps:
           - task: PublishBuildArtifacts@1
             inputs:
-              PathtoPublish: '$(Build.Repository.LocalPayth)/deploy/helm/poc-aks/'
+              PathtoPublish: '$(Build.Repository.LocalPayth)/deploy/helm'
               ArtifactName: '$(Build.BuildNumber)/deploy'
               publishLocation: 'Container'
