@@ -41,7 +41,12 @@ spec:
           name: {{ include "poc-aks.name.db" . }}
         volumeMounts:
         - {{- toYaml .Values.volume.db | nindent 10 }}
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
       volumes:
+      - name: mysql-initdb
+        configMap:
+          name: {{ include "poc-aks.fullname.db" . }}-initdb-cm
       - name: {{ .Values.volume.db.name }}
         persistentVolumeClaim:
           claimName: {{ include "poc-aks.fullname.db" . }}-pvc

@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "poc-aks.fullname.db" . }}-initdb-cm
+data:
+  initdb.sql: |
+    CREATE DATABASE {{ .Values.mysql.database_name }};
+    GRANT ALL PRIVILEGES ON *.* TO 'admin'@'%';
+    CREATE TABLE friends (id INT, name VARCHAR(256), age INT, gender VARCHAR(3));
+    INSERT INTO friends VALUES (1, 'Test toto', 32, 'm');

@@ -14,7 +14,7 @@ image:
     tag: 5.6
   frontend:
     repository: pocaksacr01.azurecr.io/pocaksacr01/poc-aks
-    tag: 1.0
+    tag: '1.0'
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -145,7 +145,7 @@ storageClass:
   id: 0
 
 registrySecret: 
-  name: regcred
+  name: poc-aks-registry-cred
   docker-server: pocaksacr01.azurecr.io 
   docker-username: pocaksacr01 
   docker-password: xxxxxx 

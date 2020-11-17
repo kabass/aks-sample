@@ -81,3 +81,10 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
     helm ls --all
   8)delete all the release
     helm uninstall poc-aks-helm
+
+10) installs the secrets-store-csi-driver and the azure keyvault provider for the driver
+https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/charts/csi-secrets-store-provider-azure/README.md
+$ helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
+$ helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
+
+next : https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/README.md
