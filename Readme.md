@@ -82,9 +82,17 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
   8)delete all the release
     helm uninstall poc-aks-helm
 
-10) installs the secrets-store-csi-driver and the azure keyvault provider for the driver
+  9)installs the secrets-store-csi-driver and the azure keyvault provider for the driver
 https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/charts/csi-secrets-store-provider-azure/README.md
 $ helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
 $ helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
 
 next : https://github.com/Azure/secrets-store-csi-driver-provider-azure/blob/master/README.md
+
+
+https://docs.microsoft.com/en-us/azure/key-vault/general/key-vault-integrate-kubernetes 
+a- use managed identities ==> terraform
+b- Install the Secrets Store CSI driver ==> Helm.
+c- Create your own SecretProviderClass object ==> Helm
+d- use managed identities on AKS pod ==> Helm
+e- edit your pod with mounted secrets from your key vault.  ==> helm
