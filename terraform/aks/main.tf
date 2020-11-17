@@ -86,3 +86,11 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
     Environment = "Development"
   }
 }
+
+
+resource "null_resource" "helm_init_command" {
+
+  provisioner "local-exec" {
+    command = "helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
+  }
+}

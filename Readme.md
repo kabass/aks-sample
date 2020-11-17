@@ -84,18 +84,18 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
 
   9)installs the secrets-store-csi-driver and the azure keyvault provider for the driver
     https://docs.microsoft.com/en-us/azure/key-vault/general/key-vault-integrate-kubernetes 
-    a- use managed identities ==> Helm via Azure Devops
+    a- use managed identities ==> Helm via Terraform
        deploy AKS with managed identity enabled
        https://github.com/terraform-providers/terraform-provider-azurerm/issues/4506
-       
-    b- Install the Secrets Store CSI driver ==> Helm install
+
+    b- Install the Secrets Store CSI driver ==> Helm Terraform ?
        helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
        helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
     c- Create your own SecretProviderClass object ==> Helm
        https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
     d- use managed identities on AKS pod 
        i) To create, list, or read a user-assigned managed identity, your AKS cluster needs to be assigned the Managed Identity Operator role. ==> Terraform
-          clientId=
+          clientId=b4aba041-4980-4140-9125-93705b8f21aa
           SUBID=b257a86c-9b05-45ac-b405-69a297df5ee2
           RESOURCE_GROUP=poc_aks_rg
           NODE_RESOURCE_GROUP=MC_poc_aks_rg_poc_aks_cluster_eastus
