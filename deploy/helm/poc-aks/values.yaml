@@ -84,7 +84,7 @@ mysql:
       key: port
       env: DATASOURCE_PORT
     database:
-      key: db-name
+      key: db_name
       env: DATASOURCE_DATABASE_NAME
 
 volume:
