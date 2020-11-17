@@ -62,10 +62,11 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
     vm_size    = "Standard_D2_v2"
   }
 
-  service_principal {
-    client_id     = data.azurerm_key_vault_secret.sp_id.value
-    client_secret = data.azurerm_key_vault_secret.sp_secret.value
-  }
+  #service_principal {
+  #  client_id     = data.azurerm_key_vault_secret.sp_id.value
+  #  client_secret = data.azurerm_key_vault_secret.sp_secret.value
+  #}
+  enable_managed_identity = true
 
   addon_profile {
     oms_agent {

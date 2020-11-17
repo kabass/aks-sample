@@ -85,15 +85,20 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
   9)installs the secrets-store-csi-driver and the azure keyvault provider for the driver
     https://docs.microsoft.com/en-us/azure/key-vault/general/key-vault-integrate-kubernetes 
     a- use managed identities ==> Helm via Azure Devops
+       deploy AKS with managed identity enabled
+       https://github.com/terraform-providers/terraform-provider-azurerm/issues/4506
        
     b- Install the Secrets Store CSI driver ==> Helm install
        helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
        helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
     c- Create your own SecretProviderClass object ==> Helm
        https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
-
     d- use managed identities on AKS pod 
        i) To create, list, or read a user-assigned managed identity, your AKS cluster needs to be assigned the Managed Identity Operator role. ==> Terraform
+          clientId=
+          SUBID=b257a86c-9b05-45ac-b405-69a297df5ee2
+          RESOURCE_GROUP=poc_aks_rg
+          NODE_RESOURCE_GROUP=MC_poc_aks_rg_poc_aks_cluster_eastus
           az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$RESOURCE_GROUP
           az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
           az role assignment create --role "Virtual Machine Contributor" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
@@ -103,7 +108,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
        iii) Create an Azure AD identity. In the output, copy the clientId and principalId for later use ==> terraform ?
           az identity create -g $resourceGroupName -n $identityName
        iv) Assign the Reader role to the Azure AD identity  ==> terraform
-          az role assignment create --role "Reader" --assignee $principalId --scope /subscriptions/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/resourceGroups/contosoResourceGroup/providers/Microsoft.KeyVault/vaults/contosoKeyVault5
+          az role assignment create --role "Reader" --assignee $principalId --scope /subscriptions/$SUBID/resourceGroups/contosoResourceGroup/providers/Microsoft.KeyVault/vaults/contosoKeyVault5
           az keyvault set-policy -n contosoKeyVault5 --secret-permissions get --spn $clientId
           az keyvault set-policy -n contosoKeyVault5 --key-permissions get --spn $clientId
     e- edit your pod with mounted secrets from your key vault.  ==> Helm
