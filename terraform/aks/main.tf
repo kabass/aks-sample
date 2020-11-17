@@ -66,7 +66,9 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   #  client_id     = data.azurerm_key_vault_secret.sp_id.value
   #  client_secret = data.azurerm_key_vault_secret.sp_secret.value
   #}
-  enable_managed_identity = true
+  identity {
+    type = "SystemAssigned"
+  }
 
   addon_profile {
     oms_agent {

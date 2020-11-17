@@ -1,7 +1,3 @@
 output client_id {
-  value = data.azurerm_key_vault_secret.sp_id.value
-}
-
-output client_secret {
-  value = data.azurerm_key_vault_secret.sp_secret.value
+  value = azurerm_kubernetes_cluster.k8s_cluster.kubelet_identity[0].client_id
 }
