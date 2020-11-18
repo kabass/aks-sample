@@ -135,3 +135,18 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
               azureIdentity: "poc-aks-poc-identity"       # The name of your Azure identity
               selector: azure-pod-identity-binding-selector
 
+
+
+
+
+//
+spec:
+  parameters:
+    objects: |
+      array:
+        - |
+          objectName: tata
+          objectType: secret
+          objectVersion: ""
+
+kubectl patch SecretProviderClass poc-aks-registry-secret --type merge -p "$(cat tmp.yaml)"
