@@ -84,50 +84,54 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
 
   9)installs the secrets-store-csi-driver and the azure keyvault provider for the driver
     https://docs.microsoft.com/en-us/azure/key-vault/general/key-vault-integrate-kubernetes 
-    a- use managed identities ==> Helm via Terraform
+    a- use managed identities ==> Terraform (ok)
        deploy AKS with managed identity enabled
        https://github.com/terraform-providers/terraform-provider-azurerm/issues/4506
-
-    b- Install the Secrets Store CSI driver ==> Helm Terraform ?
+    b- Install the Secrets Store CSI driver ==> Helm via Terraform (ok)
        helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
        helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
-    c- Create your own SecretProviderClass object ==> Helm
-       https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
-    d- use managed identities on AKS pod 
-       i) To create, list, or read a user-assigned managed identity, your AKS cluster needs to be assigned the Managed Identity Operator role. ==> Terraform
-          clientId=b4aba041-4980-4140-9125-93705b8f21aa
+    c- use managed identities on AKS pod 
+       i) To create, list, or read a user-assigned managed identity, your AKS cluster needs to be assigned the Managed Identity Operator role. ==> Terraform (ok)
+          clusterClientId=b4aba041-4980-4140-9125-93705b8f21aa
           SUBID=b257a86c-9b05-45ac-b405-69a297df5ee2
           RESOURCE_GROUP=poc_aks_rg
           NODE_RESOURCE_GROUP=MC_poc_aks_rg_poc_aks_cluster_eastus
-          az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$RESOURCE_GROUP
-          az role assignment create --role "Managed Identity Operator" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
-          az role assignment create --role "Virtual Machine Contributor" --assignee $clientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
-       ii) Install the Azure Active Directory (Azure AD) identity into AKS ==> Helm via Terraform ?
+          az role assignment create --role "Managed Identity Operator" --assignee $clusterClientId --scope /subscriptions/$SUBID/resourcegroups/$RESOURCE_GROUP
+          az role assignment create --role "Managed Identity Operator" --assignee $clusterClientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
+          az role assignment create --role "Virtual Machine Contributor" --assignee $clusterClientId --scope /subscriptions/$SUBID/resourcegroups/$NODE_RESOURCE_GROUP
+      ii) Install the Azure Active Directory (Azure AD) identity into AKS ==> Helm via Terraform (ok)
           helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts
           helm install pod-identity aad-pod-identity/aad-pod-identity
-       iii) Create an Azure AD identity. In the output, copy the clientId and principalId for later use ==> terraform ?
+     iii) Create an Azure AD identity. In the output, copy the clientId and principalId for later use ==> terraform (ok)
+          identityName=poc-aks-pod-identity
           az identity create -g $resourceGroupName -n $identityName
-       iv) Assign the Reader role to the Azure AD identity  ==> terraform
-          az role assignment create --role "Reader" --assignee $principalId --scope /subscriptions/$SUBID/resourceGroups/contosoResourceGroup/providers/Microsoft.KeyVault/vaults/contosoKeyVault5
-          az keyvault set-policy -n contosoKeyVault5 --secret-permissions get --spn $clientId
-          az keyvault set-policy -n contosoKeyVault5 --key-permissions get --spn $clientId
-    e- edit your pod with mounted secrets from your key vault.  ==> Helm
-       i) create an AzureIdentity in your cluster that references the identity that you created earlier
+      iv) Assign the Reader role to the Azure AD identity  ==> terraform (ok)
+          principalId=2cb7f9ce-ea94-4023-848f-82f1b2147960
+          podClientId=2fd00664-1d32-46f1-b55f-ac44dabe8877
+          keyvault=poc-aks-kv
+          KV_RESS_GROUP=poc_aks_others_rg
+          az role assignment create --role "Reader" --assignee $principalId --scope /subscriptions/$SUBID/resourceGroups/$KV_RESS_GROUP/providers/Microsoft.KeyVault/vaults/$keyvault
+          az keyvault set-policy -n $keyvault --secret-permissions get --spn $podClientId
+          az keyvault set-policy -n $keyvault --key-permissions get --spn $podClientId
+    d- Create your own SecretProviderClass object ==> Helm via Azure Devops
+       https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
+    e- edit your pod with mounted secrets from your key vault. 
+       i) create an AzureIdentity in your cluster that references the identity that you created earlier ==> Terraform
           apiVersion: aadpodidentity.k8s.io/v1
           kind: AzureIdentity
           metadata:
-              name: "azureIdentityName"               # The name of your Azure identity
+              name: "poc-aks-pod-identity"                # The name of your Azure identity
           spec:
-              type: 0                                 # Set type: 0 for managed service identity
-              resourceID: /subscriptions/<SUBID>/resourcegroups/<RESOURCEGROUP>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<AZUREIDENTITYNAME>
-              clientID: "managedIdentityClientId"     # The clientId of the Azure AD identity that you created earlier
+              type: 0                                     # Set type: 0 for managed service identity
+              resourceID: /subscriptions/b257a86c-9b05-45ac-b405-69a297df5ee2/resourcegroups/poc_aks_rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-aks-pod-identity
+              clientID: "2fd00664-1d32-46f1-b55f-ac44dabe8877"     # The clientId of the Azure AD identity that you created earlier
 
-       ii) create an AzureIdentityBinding that references the AzureIdentity you created
+      ii) create an AzureIdentityBinding that references the AzureIdentity you created ==> Helm via Azure Devops
           apiVersion: aadpodidentity.k8s.io/v1
           kind: AzureIdentityBinding
           metadata:
-              name: azure-pod-identity-binding
+              name: poc-aks-pod-identity-binding
           spec:
-              azureIdentity: "azureIdentityName"      # The name of your Azure identity
+              azureIdentity: "poc-aks-poc-identity"       # The name of your Azure identity
               selector: azure-pod-identity-binding-selector
 

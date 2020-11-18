@@ -33,14 +33,39 @@ data "azurerm_key_vault" "keyvault" {
   resource_group_name = var.kv_resource_group_name
 }
 
-data "azurerm_key_vault_secret" "sp_id" {
-  name         = "poc-aks-sp-id"
-  key_vault_id = data.azurerm_key_vault.keyvault.id
+resource "azurerm_user_assigned_identity" "identity" {
+  resource_group_name = azurerm_resource_group.k8s_rg.name
+  location            = var.log_analytics_workspace_location
+
+  name = var.pod_identity
 }
 
-data "azurerm_key_vault_secret" "sp_secret" {
-  name         = "poc-aks-sp-secret"
+data "azuread_client_config" "current" {
+}
+
+resource "azurerm_role_assignment" "reader_kv" {
+  scope                = data.azurerm_key_vault.keyvault.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_user_assigned_identity.identity.principal_id
+}
+
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault_access_policy" "identity_get" {
   key_vault_id = data.azurerm_key_vault.keyvault.id
+
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  object_id = data.azurerm_client_config.current.object_id
+  //tenant_id = data.azuread_client_config.current.tenant_id
+  //object_id = data.azuread_client_config.current.object_id
+
+  key_permissions = [
+    "get",
+  ]
+
+  secret_permissions = [
+    "get",
+  ]
 }
 
 resource "azurerm_kubernetes_cluster" "k8s_cluster" {
@@ -62,10 +87,6 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
     vm_size    = "Standard_D2_v2"
   }
 
-  #service_principal {
-  #  client_id     = data.azurerm_key_vault_secret.sp_id.value
-  #  client_secret = data.azurerm_key_vault_secret.sp_secret.value
-  #}
   identity {
     type = "SystemAssigned"
   }
@@ -87,10 +108,31 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   }
 }
 
-
-resource "null_resource" "helm_init_command" {
+resource "null_resource" "csi-secrets-store-provider-azure_aad-pod-identity" {
+  provisioner "local-exec" {
+    command = "helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts; helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name"
+  }
 
   provisioner "local-exec" {
-    command = "helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
+    command = "helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts;helm install pod-identity aad-pod-identity/aad-pod-identity"
   }
 }
+/*
+resource "azurerm_role_assignment" "Managed_Identity_Operator_1" {
+  scope                = azurerm_resource_group.k8s_rg.id
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_kubernetes_cluster.k8s_cluster.principal_id
+}
+
+resource "azurerm_role_assignment" "Managed_Identity_Operator_2" {
+  scope                = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
+  role_definition_name = "Managed Identity Operator"
+  principal_id         = azurerm_kubernetes_cluster.k8s_cluster.principal_id
+}
+
+resource "azurerm_role_assignment" "Virtual_Machine_Contributor" {
+  scope                = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
+  role_definition_name = "Virtual Machine Contributor"
+  principal_id         = azurerm_kubernetes_cluster.k8s_cluster.principal_id
+}
+*/

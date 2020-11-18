@@ -30,6 +30,10 @@ variable location {
   default = "East US"
 }
 
+variable pod_identity {
+  default = "poc-aks-pod-identity"
+}
+
 variable log_analytics_workspace_name {
   default = "pocAksLoganalytic"
 }
