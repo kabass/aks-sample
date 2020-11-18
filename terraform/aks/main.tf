@@ -155,3 +155,14 @@ resource "azurerm_role_assignment" "Virtual_Machine_Contributor" {
   role_definition_name = "Virtual Machine Contributor"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
+
+
+/*
+resource "null_resource" "azd-pod-identity" {
+  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
+
+  provisioner "local-exec" {
+    command = "kubectl apply -f - << EOF \n     apiVersion: aadpodidentity.k8s.io/v1 \n          kind: AzureIdentity \n          metadata: \n              name: "${var.pod_identity}"                # The name of your Azure identity \n          spec: \n              type: 0                                     # Set type: 0 for managed service identity \n              resourceID: ${azurerm_user_assigned_identity.identity.id} \n              clientID: ${azurerm_user_assigned_identity.identity.client_id}     # The clientId of the Azure AD identity that you created earlier \n    EOF"
+  }
+
+}*/

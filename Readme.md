@@ -115,6 +115,8 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
           az keyvault set-policy -n $keyvault --key-permissions get --spn $podClientId
     d- Create your own SecretProviderClass object ==> Helm via Azure Devops
        https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
+       i) Create base object in terraform
+       ii) Patch secret using CI/CD : kubectl patch SecretProviderClass poc-aks-registry-secret --type merge -p "$(cat tmp.yaml)"
     e- edit your pod with mounted secrets from your key vault. 
        i) create an AzureIdentity in your cluster that references the identity that you created earlier ==> Terraform
           apiVersion: aadpodidentity.k8s.io/v1
@@ -145,7 +147,7 @@ spec:
     objects: |
       array:
         - |
-          objectName: tata
+          objectName: titi
           objectType: secret
           objectVersion: ""
 
