@@ -18,12 +18,16 @@ variable keyvault_name {
   default = "poc-aks-kv"
 }
 
-variable resource_group_name {
-  default = "poc_aks_rg"
+variable others_resource_group_name {
+  default = "poc_aks_others_rg"
 }
 
-variable kv_resource_group_name {
-  default = "poc_aks_others_rg"
+variable resource_group_name {
+  default = "poc_aks_cluster_rg"
+}
+
+variable node_resource_group_name {
+  default = "poc_aks_nodes_rg"
 }
 
 variable location {

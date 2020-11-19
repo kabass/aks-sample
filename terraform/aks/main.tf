@@ -2,7 +2,17 @@ resource "azurerm_resource_group" "k8s_rg" {
   name     = var.resource_group_name
   location = var.location
 }
-
+/*
+resource "azurerm_resource_group" "k8s_node_rg" {
+  name     = var.node_resource_group_name
+  location = var.location
+}*/
+/*
+resource "azurerm_resource_group" "k8s_others_rg" {
+  name     = var.resource_group_name
+  location = var.location
+}
+*/
 resource "random_id" "log_analytics_workspace_name_suffix" {
   byte_length = 8
 }
@@ -11,14 +21,14 @@ resource "azurerm_log_analytics_workspace" "test" {
   # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
   name                = "${var.log_analytics_workspace_name}-${random_id.log_analytics_workspace_name_suffix.dec}"
   location            = var.log_analytics_workspace_location
-  resource_group_name = azurerm_resource_group.k8s_rg.name
+  resource_group_name = var.others_resource_group_name
   sku                 = var.log_analytics_workspace_sku
 }
 
 resource "azurerm_log_analytics_solution" "test" {
   solution_name         = "ContainerInsights"
   location              = azurerm_log_analytics_workspace.test.location
-  resource_group_name   = azurerm_resource_group.k8s_rg.name
+  resource_group_name   = var.others_resource_group_name
   workspace_resource_id = azurerm_log_analytics_workspace.test.id
   workspace_name        = azurerm_log_analytics_workspace.test.name
 
@@ -27,11 +37,38 @@ resource "azurerm_log_analytics_solution" "test" {
     product   = "OMSGallery/ContainerInsights"
   }
 }
+/*
+## Private key for the kubernetes cluster ##
+resource "tls_private_key" "key" {
+  algorithm   = "RSA"
+}
+
+## Save the private key in the local workspace ##
+resource "null_resource" "save-key" {
+  triggers = {
+    key = tls_private_key.key.private_key_pem
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      mkdir -p ${path.module}/.ssh
+      echo "${tls_private_key.key.private_key_pem}" > ${path.module}/.ssh/id_rsa
+      chmod 0600 ${path.module}/.ssh/id_rsa
+EOF
+  }
+}
+*/
+
+data "azurerm_virtual_network" "vpn" {
+  name                = "poc-aks-vnet"
+  resource_group_name = "poc-aks-network-rg"
+}
 
 resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   name                = var.cluster_name
   location            = azurerm_resource_group.k8s_rg.location
   resource_group_name = azurerm_resource_group.k8s_rg.name
+  node_resource_group = var.node_resource_group_name
   dns_prefix          = var.dns_prefix
 
   linux_profile {
@@ -51,6 +88,22 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
     type = "SystemAssigned"
   }
 
+  network_profile {
+    network_plugin     = "azure"
+    
+    #vnet_id         = data.azurerm_virtual_network.vpn.id
+    #nodes_subnet_id = data.azurerm_virtual_network.vpn.subnet_ids[0]
+    service_cidr       = "10.1.0.0/16"
+    dns_service_ip     = "10.1.0.10"
+    docker_bridge_cidr = "172.17.0.1/16"
+    outbound_type      = "loadBalancer"
+    load_balancer_sku  = "Standard"
+  }
+
+  role_based_access_control {
+    enabled = true
+  }
+
   addon_profile {
     kube_dashboard {
       enabled = true
@@ -60,11 +113,6 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
       enabled                    = true
       log_analytics_workspace_id = azurerm_log_analytics_workspace.test.id
     }
-  }
-
-  network_profile {
-    load_balancer_sku = "Standard"
-    network_plugin    = "kubenet"
   }
 
   tags = {
@@ -96,11 +144,11 @@ resource "null_resource" "csi-secrets-store-provider-azure_aad-pod-identity" {
 
 data "azurerm_key_vault" "keyvault" {
   name                = var.keyvault_name
-  resource_group_name = var.kv_resource_group_name
+  resource_group_name = var.others_resource_group_name
 }
 
 resource "azurerm_user_assigned_identity" "identity" {
-  resource_group_name = azurerm_resource_group.k8s_rg.name
+  resource_group_name = var.others_resource_group_name
   location            = var.log_analytics_workspace_location
 
   name = var.pod_identity
@@ -138,19 +186,19 @@ resource "azurerm_role_assignment" "Managed_Identity_Operator_1" {
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
 
-data "azurerm_resource_group" "k8s_rg_node" {
-  name     = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group  
+data "azurerm_resource_group" "k8s_node_rg" {
+  name = var.node_resource_group_name
 }
 
 resource "azurerm_role_assignment" "Managed_Identity_Operator_2" {
-  scope                = data.azurerm_resource_group.k8s_rg_node.id
-  
+  scope = data.azurerm_resource_group.k8s_node_rg.id
+
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
 
 resource "azurerm_role_assignment" "Virtual_Machine_Contributor" {
-  scope                = data.azurerm_resource_group.k8s_rg_node.id
+  scope = data.azurerm_resource_group.k8s_node_rg.id
 
   role_definition_name = "Virtual Machine Contributor"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
