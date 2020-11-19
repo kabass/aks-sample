@@ -5,8 +5,8 @@ metadata:
   name: "poc-aks-pod-identity"                # The name of your Azure identity
 spec:
   type: 0                                     # Set type: 0 for managed service identity
-  resourceID: /subscriptions/b257a86c-9b05-45ac-b405-69a297df5ee2/resourcegroups/poc_aks_cluster_rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-aks-pod-identity
-  clientID: "4f541a91-eefe-4bb3-939d-15c1b440153a"     # The clientId of the Azure AD identity that you created earlier
+  resourceID: /subscriptions/b257a86c-9b05-45ac-b405-69a297df5ee2/resourcegroups/poc_aks_others_rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-aks-pod-identity
+  clientID: "ea1d4737-ca6f-4342-828b-b5435a6b10d7" #"4f541a91-eefe-4bb3-939d-15c1b440153a"     # The clientId of the Azure AD identity that you created earlier
 EOF
 
 ---
