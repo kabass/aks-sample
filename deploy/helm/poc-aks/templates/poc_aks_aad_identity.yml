@@ -6,7 +6,7 @@ metadata:
 spec:
   type: 0                                     # Set type: 0 for managed service identity
   resourceID: /subscriptions/b257a86c-9b05-45ac-b405-69a297df5ee2/resourcegroups/poc_aks_others_rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/poc-aks-pod-identity
-  clientID: "ea1d4737-ca6f-4342-828b-b5435a6b10d7" #"4f541a91-eefe-4bb3-939d-15c1b440153a"     # The clientId of the Azure AD identity that you created earlier
+  clientID: "25a3d37c-0ccc-47c3-b02a-56798db37d7d" #"ea1d4737-ca6f-4342-828b-b5435a6b10d7"     # The clientId of the Azure AD identity that you created earlier
 EOF
 
 ---
@@ -17,7 +17,7 @@ metadata:
     name: poc-aks-pod-identity-binding
 spec:
     azureIdentity: "poc-aks-poc-identity"       # The name of your Azure identity
-    selector: azure-pod-identity-binding-selector
+    selector: poc-aks-selector
 EOF
 
 ---
@@ -28,7 +28,7 @@ kind: Pod
 metadata:
   name: nginx-secrets-store-inline
   labels:
-    aadpodidbinding: azure-pod-identity-binding-selector
+    aadpodidbinding: poc-aks-selector
 spec:
   containers:
     - name: nginx

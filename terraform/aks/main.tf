@@ -142,44 +142,8 @@ resource "null_resource" "csi-secrets-store-provider-azure_aad-pod-identity" {
   }
 }
 
-data "azurerm_key_vault" "keyvault" {
-  name                = var.keyvault_name
-  resource_group_name = var.others_resource_group_name
-}
 
-resource "azurerm_user_assigned_identity" "identity" {
-  resource_group_name = var.others_resource_group_name
-  location            = var.log_analytics_workspace_location
-
-  name = var.pod_identity
-}
-
-data "azuread_client_config" "current" {}
-
-data "azurerm_client_config" "current" {}
-
-resource "azurerm_role_assignment" "reader_kv" {
-  scope                = data.azurerm_key_vault.keyvault.id
-  role_definition_name = "Reader"
-  principal_id         = azurerm_user_assigned_identity.identity.principal_id
-}
-
-resource "azurerm_key_vault_access_policy" "identity_get" {
-  key_vault_id = data.azurerm_key_vault.keyvault.id
-
-  tenant_id      = data.azurerm_client_config.current.tenant_id
-  object_id      = azurerm_user_assigned_identity.identity.client_id
-  application_id = azurerm_user_assigned_identity.identity.client_id
-
-  key_permissions = [
-    "get",
-  ]
-
-  secret_permissions = [
-    "get",
-  ]
-}
-
+### Cluster Identity permissions on Resource groups
 resource "azurerm_role_assignment" "Managed_Identity_Operator_1" {
   scope                = azurerm_resource_group.k8s_rg.id
   role_definition_name = "Managed Identity Operator"
@@ -205,6 +169,42 @@ resource "azurerm_role_assignment" "Virtual_Machine_Contributor" {
 }
 
 
+### Pod Identity permissions on KeyVault
+resource "azurerm_user_assigned_identity" "identity" {
+  resource_group_name = var.others_resource_group_name
+  location            = var.log_analytics_workspace_location
+
+  name = var.pod_identity
+}
+
+data "azurerm_client_config" "current" {}
+
+data "azurerm_key_vault" "keyvault" {
+  name                = var.keyvault_name
+  resource_group_name = var.others_resource_group_name
+}
+
+resource "azurerm_role_assignment" "reader_kv" {
+  scope                = data.azurerm_key_vault.keyvault.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_user_assigned_identity.identity.principal_id
+}
+
+resource "azurerm_key_vault_access_policy" "identity_get" {
+  key_vault_id = data.azurerm_key_vault.keyvault.id
+
+  tenant_id      = data.azurerm_client_config.current.tenant_id
+  object_id      = azurerm_user_assigned_identity.identity.client_id
+  application_id = azurerm_user_assigned_identity.identity.client_id
+
+  key_permissions = [
+    "get",
+  ]
+
+  secret_permissions = [
+    "get",
+  ]
+}
 /*
 resource "null_resource" "azd-pod-identity" {
   depends_on = [azurerm_kubernetes_cluster.k8s_cluster]

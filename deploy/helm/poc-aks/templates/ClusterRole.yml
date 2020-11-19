@@ -6,15 +6,15 @@ metadata:
 rules:
 - apiGroups: [secrets-store.csi.x-k8s.io]
   resources: [secretproviderclasses]
-  verbs: [get, list, update]
+  verbs: [all]
 
 - apiGroups: [secrets-store.csi.x-k8s.io]
   resources: [secretproviderclasses/status]
-  verbs: [get, patch, update]
+  verbs: [all]
 
 - apiGroups: [""]
   resources: [secrets]
-  verbs: [ create, delete, get, update]
+  verbs: [all]
 EOF
 
 ---
