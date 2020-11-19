@@ -68,8 +68,8 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   name                = var.cluster_name
   location            = azurerm_resource_group.k8s_rg.location
   resource_group_name = azurerm_resource_group.k8s_rg.name
-  node_resource_group = var.node_resource_group_name
-  dns_prefix          = var.dns_prefix
+  #node_resource_group = var.node_resource_group_name
+  dns_prefix = var.dns_prefix
 
   linux_profile {
     admin_username = "ubuntu"
@@ -89,8 +89,8 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   }
 
   network_profile {
-    network_plugin     = "azure"
-    
+    network_plugin = "azure"
+
     #vnet_id         = data.azurerm_virtual_network.vpn.id
     #nodes_subnet_id = data.azurerm_virtual_network.vpn.subnet_ids[0]
     service_cidr       = "10.1.0.0/16"
@@ -187,7 +187,7 @@ resource "azurerm_role_assignment" "Managed_Identity_Operator_1" {
 }
 
 data "azurerm_resource_group" "k8s_node_rg" {
-  name = var.node_resource_group_name
+  name = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
 }
 
 resource "azurerm_role_assignment" "Managed_Identity_Operator_2" {
