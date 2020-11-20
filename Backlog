@@ -25,8 +25,8 @@ Cluster AKS
 
 - Keyvault
   - Clé d'encryptage Kubernetes
-  - Clé de base de données (connection string)
-  - Certificates
+  - Clé de base de données utilisée par l'appli front
+  - Certificats utilisés par le Ingress
 
 - Telemetry with Azure Monitor: Log Analytics & Insighgts
   - log aplicatifs
@@ -51,7 +51,7 @@ Cluster AKS
 - Azure Devops
   - CI
   - CD
-  - Helm
+  + Helm
 
 - Container Registry
   - validate images
@@ -66,8 +66,10 @@ Cluster AKS
   - Kurde pour aider à reboot les VM updates par Azure
   
 - Scaling
-  - scale down to 0 pour les node pools supplémentaires
+  - Scale up and scale down to 0 pour les node pools supplémentaires
   
 - Kubernetes dashboard et Kubernetes resource viewer
-
+  az aks browse --resource-group poc_aks_cluster_rg --name poc_aks_cluster
+  
 - Vérifiez si Kubernetes propose de configurer un Registry (Docker ou ACR) par défaut
+  https://github.com/moby/moby/issues/11815 

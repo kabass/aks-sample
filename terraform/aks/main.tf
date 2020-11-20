@@ -205,12 +205,111 @@ resource "azurerm_key_vault_access_policy" "identity_get" {
     "get",
   ]
 }
-/*
-resource "null_resource" "azd-pod-identity" {
-  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
 
+resource "null_resource" "kubectl_1" {
   provisioner "local-exec" {
-    command = "kubectl apply -f - << EOF \n     apiVersion: aadpodidentity.k8s.io/v1 \n          kind: AzureIdentity \n          metadata: \n              name: "${var.pod_identity}"                # The name of your Azure identity \n          spec: \n              type: 0                                     # Set type: 0 for managed service identity \n              resourceID: ${azurerm_user_assigned_identity.identity.id} \n              clientID: ${azurerm_user_assigned_identity.identity.client_id}     # The clientId of the Azure AD identity that you created earlier \n    EOF"
+    command = "kubectl delete -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
   }
+}
+resource "null_resource" "kubectl_2" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
+  }
+}
 
-}*/
+resource "null_resource" "kubectl_3" {
+  provisioner "local-exec" {
+    command = "kubectl delete -f - <<EOF\n${local.aadpodidentity_yaml}\nEOF"
+  }
+}
+
+resource "null_resource" "kubectl_4" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f - <<EOF\n${local.aadpodidentity_yaml}\nEOF"
+  }
+  /*
+  provisioner "local-exec" {
+    when    = destroy
+    command = "kubectl delete -f - <<EOF\n${local.aadpodidentity_yaml} --kubeconfig <(echo $KUBECONFIG | base64 --decode)\nEOF"
+
+    interpreter = ["/bin/bash", "-c"]
+    environment = {
+      KUBECONFIG = base64encode(var.kubeconfig)
+    }
+  }
+  */
+}
+
+
+locals {
+  secretProvider_yaml = <<EOF
+apiVersion: secrets-store.csi.x-k8s.io/v1alpha1
+kind: SecretProviderClass
+metadata:
+  name: poc-aks-registry-secret
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "true"                                              # [REQUIRED] Set to "true" if using managed identities
+    useVMManagedIdentity: "false"                                       # [OPTIONAL] if not provided, will default to "false"
+    userAssignedIdentityID: ${azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id}      # [REQUIRED] If you're using a service principal, use the client id to specify which user-assigned managed identity to use. If you're using a user-assigned identity as the VM's managed identity, specify the identity's client id. If the value is empty, it defaults to use the system-assigned identity on the VM
+                                                                        #     az ad sp show --id http://contosoServicePrincipal --query appId -o tsv
+                                                                        #     the preceding command will return the client ID of your service principal
+    keyvaultName: "${var.keyvault_name}"                               # [REQUIRED] the name of the key vault
+                                                             #     az keyvault show --name contosoKeyVault5
+                                                             #     the preceding command will display the key vault metadata, which includes the subscription ID, resource group name, key vault 
+    cloudName: ""                                            # [OPTIONAL for Azure] if not provided, Azure environment will default to AzurePublicCloud
+    objects:  |
+      array:
+        - |
+          objectName: titi
+          objectType: secret
+          objectVersion: ""
+    resourceGroup: "${var.others_resource_group_name}"                            # [REQUIRED] the resource group name of the key vault
+    subscriptionId: "${data.azurerm_client_config.current.subscription_id}"        # [REQUIRED] the subscription ID of the key vault
+    tenantId: "${data.azurerm_client_config.current.tenant_id}"              # [REQUIRED] the tenant ID of the key vault
+EOF
+
+  aadpodidentity_yaml = <<EOF
+apiVersion: aadpodidentity.k8s.io/v1 
+kind: AzureIdentity 
+metadata: 
+  name: "${var.pod_identity}"                # The name of your Azure identity 
+spec: 
+  type: 0                                     # Set type: 0 for managed service identity 
+  resourceID: ${azurerm_user_assigned_identity.identity.id} 
+  clientID: ${azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id}     # The clientId of the Azure AD identity that you created earlier"
+
+---
+apiVersion: aadpodidentity.k8s.io/v1
+kind: AzureIdentityBinding
+metadata:
+    name: "${var.pod_identity}-binding"
+spec:
+    azureIdentity: "${var.pod_identity}"       # The name of your Azure identity
+    selector: poc-aks-selector
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: poc-aks-test
+  labels:
+    aadpodidbinding: poc-aks-selector
+spec:
+  containers:
+    - name: nginx-test
+      image: nginx
+      volumeMounts:
+        - name: secrets-store-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+  volumes:
+    - name: secrets-store-inline
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: poc-aks-registry-secret
+EOF
+}
