@@ -90,7 +90,11 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
     b- Install the Secrets Store CSI driver ==> Helm via Terraform (ok)
        helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts
        helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name
-    c- use managed identities on AKS pod 
+    c- Create your own SecretProviderClass object ==> Helm via Azure Devops
+       https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
+       i) Create base object in terraform
+       ii) Patch secret using CI/CD : kubectl patch SecretProviderClass poc-aks-registry-secret --type merge -p "$(cat tmp.yaml)"
+    d- use managed identities on AKS pod 
        i) To create, list, or read a user-assigned managed identity, your AKS cluster needs to be assigned the Managed Identity Operator role. ==> Terraform (ok)
           clusterClientId=b4aba041-4980-4140-9125-93705b8f21aa
           SUBID=b257a86c-9b05-45ac-b405-69a297df5ee2
@@ -113,10 +117,6 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
           az role assignment create --role "Reader" --assignee $principalId --scope /subscriptions/$SUBID/resourceGroups/$KV_RESS_GROUP/providers/Microsoft.KeyVault/vaults/$keyvault
           az keyvault set-policy -n $keyvault --secret-permissions get --spn $podClientId
           az keyvault set-policy -n $keyvault --key-permissions get --spn $podClientId
-    d- Create your own SecretProviderClass object ==> Helm via Azure Devops
-       https://github.com/Azure/secrets-store-csi-driver-provider-azure#create-a-new-azure-key-vault-resource-or-use-an-existing-one
-       i) Create base object in terraform
-       ii) Patch secret using CI/CD : kubectl patch SecretProviderClass poc-aks-registry-secret --type merge -p "$(cat tmp.yaml)"
     e- edit your pod with mounted secrets from your key vault. 
        i) create an AzureIdentity in your cluster that references the identity that you created earlier ==> Terraform
           apiVersion: aadpodidentity.k8s.io/v1
