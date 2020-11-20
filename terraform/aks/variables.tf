@@ -1,12 +1,12 @@
-variable "agent_count" {
+variable agent_count {
   default = 2
 }
 
-variable "pool_name" {
+variable pool_name {
   default = "pocakspool"
 }
 
-variable "dns_prefix" {
+variable dns_prefix {
   default = "pocaksdns"
 }
 
@@ -42,7 +42,7 @@ variable log_analytics_workspace_name {
   default = "pocAksLoganalytic"
 }
 
-variable "ssh_public_key" {
+variable ssh_public_key {
   default = "../../pki/pocaks.pub"
 }
 
@@ -54,4 +54,8 @@ variable log_analytics_workspace_location {
 # refer https://azure.microsoft.com/pricing/details/monitor/ for log analytics pricing 
 variable log_analytics_workspace_sku {
   default = "PerGB2018"
+}
+
+variable kubeconfig {
+  default = "~/.kube/config"
 }

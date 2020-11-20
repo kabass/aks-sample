@@ -138,7 +138,7 @@ az aks get-credentials --name poc_aks_cluster --resource-group poc_aks_rg
               selector: azure-pod-identity-binding-selector
 
 
-
+10)az aks browse --resource-group poc_aks_cluster_rg --name poc_aks_cluster
 
 
 //

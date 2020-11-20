@@ -16,7 +16,7 @@ kind: AzureIdentityBinding
 metadata:
     name: poc-aks-pod-identity-binding
 spec:
-    azureIdentity: "poc-aks-poc-identity"       # The name of your Azure identity
+    azureIdentity: "poc-aks-pod-identity"       # The name of your Azure identity
     selector: poc-aks-selector
 EOF
 
@@ -26,12 +26,12 @@ kubectl apply -f - <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx-secrets-store-inline
+  name: poc-aks-test
   labels:
     aadpodidbinding: poc-aks-selector
 spec:
   containers:
-    - name: nginx
+    - name: nginx-test
       image: nginx
       volumeMounts:
         - name: secrets-store-inline
