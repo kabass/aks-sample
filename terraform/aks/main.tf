@@ -1,18 +1,8 @@
-resource "azurerm_resource_group" "k8s_rg" {
+resource "azurerm_resource_group" "k8s_cluster_rg" {
   name     = var.resource_group_name
   location = var.location
 }
-/*
-resource "azurerm_resource_group" "k8s_node_rg" {
-  name     = var.node_resource_group_name
-  location = var.location
-}*/
-/*
-resource "azurerm_resource_group" "k8s_others_rg" {
-  name     = var.resource_group_name
-  location = var.location
-}
-*/
+
 resource "random_id" "log_analytics_workspace_name_suffix" {
   byte_length = 8
 }
@@ -66,10 +56,10 @@ data "azurerm_virtual_network" "vpn" {
 
 resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   name                = var.cluster_name
-  location            = azurerm_resource_group.k8s_rg.location
-  resource_group_name = azurerm_resource_group.k8s_rg.name
-  #node_resource_group = var.node_resource_group_name
-  dns_prefix = var.dns_prefix
+  location            = azurerm_resource_group.k8s_cluster_rg.location
+  resource_group_name = azurerm_resource_group.k8s_cluster_rg.name
+  node_resource_group = var.node_resource_group_name
+  dns_prefix          = var.dns_prefix
 
   linux_profile {
     admin_username = "ubuntu"
@@ -144,24 +134,25 @@ resource "null_resource" "csi-secrets-store-provider-azure_aad-pod-identity" {
 
 
 ### Cluster Identity permissions on Resource groups
-resource "azurerm_role_assignment" "Managed_Identity_Operator_1" {
-  scope                = azurerm_resource_group.k8s_rg.id
+resource "azurerm_role_assignment" "Managed_Identity_Operator_cluster" {
+  scope                = azurerm_resource_group.k8s_cluster_rg.id
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
 
 data "azurerm_resource_group" "k8s_node_rg" {
-  name = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
+  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
+  name       = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
 }
 
-resource "azurerm_role_assignment" "Managed_Identity_Operator_2" {
+resource "azurerm_role_assignment" "Managed_Identity_Operator_nodes" {
   scope = data.azurerm_resource_group.k8s_node_rg.id
 
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
 
-resource "azurerm_role_assignment" "Virtual_Machine_Contributor" {
+resource "azurerm_role_assignment" "Virtual_Machine_Contributor_nodes" {
   scope = data.azurerm_resource_group.k8s_node_rg.id
 
   role_definition_name = "Virtual Machine Contributor"
@@ -206,38 +197,68 @@ resource "azurerm_key_vault_access_policy" "identity_get" {
   ]
 }
 
-resource "null_resource" "kubectl_1" {
-  provisioner "local-exec" {
-    command = "kubectl delete -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
+/* Not need because the cluster delete will also delete these resources
+resource "null_resource" "kubectl_delete" {
+  triggers = {
+    secretProvider_yaml = local.secretProvider_yaml
+    aadpodidentity_yaml =local.aadpodidentity_yaml
   }
-}
-resource "null_resource" "kubectl_2" {
-  provisioner "local-exec" {
-    command = "kubectl apply -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
-  }
-}
 
-resource "null_resource" "kubectl_3" {
   provisioner "local-exec" {
-    command = "kubectl delete -f - <<EOF\n${local.aadpodidentity_yaml}\nEOF"
-  }
-}
-
-resource "null_resource" "kubectl_4" {
-  provisioner "local-exec" {
-    command = "kubectl apply -f - <<EOF\n${local.aadpodidentity_yaml}\nEOF"
-  }
-  /*
-  provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl delete -f - <<EOF\n${local.aadpodidentity_yaml} --kubeconfig <(echo $KUBECONFIG | base64 --decode)\nEOF"
+    when = destroy
+    command = "kubectl delete -f - <<EOF\n${self.triggers.secretProvider_yaml}\nEOF"
 
     interpreter = ["/bin/bash", "-c"]
-    environment = {
-      KUBECONFIG = base64encode(var.kubeconfig)
-    }
+    on_failure = continue
   }
-  */
+
+  provisioner "local-exec" {
+    when = destroy
+    command = "kubectl delete -f - <<EOF\n${self.triggers.aadpodidentity_yaml}\nEOF"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure = continue
+  }
+}*/
+
+resource "null_resource" "kubectl_apply" {
+  triggers = {
+    always_run = timestamp()
+  }
+
+  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
+
+  provisioner "local-exec" {
+    command     = "kubectl apply -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
+    interpreter = ["/bin/bash", "-c"]
+  }
+
+  provisioner "local-exec" {
+    command     = "kubectl apply -f - <<EOF\n${local.aadpodidentity_yaml}\nEOF"
+    interpreter = ["/bin/bash", "-c"]
+  }
+}
+
+resource "null_resource" "kubectl_apply_pod" {
+  triggers = {
+    always_run = timestamp()
+    pod_yaml   = local.pod_yaml
+  }
+
+  depends_on = [null_resource.kubectl_apply]
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = "kubectl delete -f - <<EOF\n${self.triggers.pod_yaml}\nEOF"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure  = continue
+  }
+
+  provisioner "local-exec" {
+    command     = "kubectl apply -f - <<EOF\n${local.pod_yaml}\nEOF"
+    interpreter = ["/bin/bash", "-c"]
+  }
 }
 
 
@@ -255,7 +276,7 @@ spec:
     userAssignedIdentityID: ${azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id}      # [REQUIRED] If you're using a service principal, use the client id to specify which user-assigned managed identity to use. If you're using a user-assigned identity as the VM's managed identity, specify the identity's client id. If the value is empty, it defaults to use the system-assigned identity on the VM
                                                                         #     az ad sp show --id http://contosoServicePrincipal --query appId -o tsv
                                                                         #     the preceding command will return the client ID of your service principal
-    keyvaultName: "${var.keyvault_name}"                               # [REQUIRED] the name of the key vault
+    keyvaultName: "${var.keyvault_name}"                                # [REQUIRED] the name of the key vault
                                                              #     az keyvault show --name contosoKeyVault5
                                                              #     the preceding command will display the key vault metadata, which includes the subscription ID, resource group name, key vault 
     cloudName: ""                                            # [OPTIONAL for Azure] if not provided, Azure environment will default to AzurePublicCloud
@@ -278,7 +299,7 @@ metadata:
 spec: 
   type: 0                                     # Set type: 0 for managed service identity 
   resourceID: ${azurerm_user_assigned_identity.identity.id} 
-  clientID: ${azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id}     # The clientId of the Azure AD identity that you created earlier"
+  clientID: ${azurerm_user_assigned_identity.identity.client_id}      # The clientId of the Azure AD identity that you created earlier"
 
 ---
 apiVersion: aadpodidentity.k8s.io/v1
@@ -288,8 +309,9 @@ metadata:
 spec:
     azureIdentity: "${var.pod_identity}"       # The name of your Azure identity
     selector: poc-aks-selector
+EOF
 
----
+  pod_yaml = <<EOF
 apiVersion: v1
 kind: Pod
 metadata:
