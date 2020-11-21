@@ -110,39 +110,16 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
   }
 }
 
-resource "null_resource" "csi-secrets-store-provider-azure_aad-pod-identity" {
+### Cluster Identity permissions on Resource groups
+data "azurerm_resource_group" "k8s_node_rg" {
   depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
-
-  provisioner "local-exec" {
-    command = "az aks get-credentials --name ${azurerm_kubernetes_cluster.k8s_cluster.name} --overwrite-existing --resource-group ${azurerm_kubernetes_cluster.k8s_cluster.resource_group_name}"
-  }
-
-  provisioner "local-exec" {
-    command = "helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
-  }
-  provisioner "local-exec" {
-    command = "helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name"
-  }
-
-  provisioner "local-exec" {
-    command = "helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
-  }
-  provisioner "local-exec" {
-    command = "helm install pod-identity aad-pod-identity/aad-pod-identity"
-  }
+  name       = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
 }
 
-
-### Cluster Identity permissions on Resource groups
 resource "azurerm_role_assignment" "Managed_Identity_Operator_cluster" {
   scope                = azurerm_resource_group.k8s_cluster_rg.id
   role_definition_name = "Managed Identity Operator"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
-}
-
-data "azurerm_resource_group" "k8s_node_rg" {
-  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
-  name       = azurerm_kubernetes_cluster.k8s_cluster.node_resource_group
 }
 
 resource "azurerm_role_assignment" "Managed_Identity_Operator_nodes" {
@@ -158,6 +135,58 @@ resource "azurerm_role_assignment" "Virtual_Machine_Contributor_nodes" {
   role_definition_name = "Virtual Machine Contributor"
   principal_id         = azurerm_kubernetes_cluster.k8s_cluster.identity[0].principal_id
 }
+
+
+resource "null_resource" "kubeconfig" {
+  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "local-exec" {
+    command = "az aks get-credentials --name ${azurerm_kubernetes_cluster.k8s_cluster.name} --overwrite-existing --resource-group ${azurerm_kubernetes_cluster.k8s_cluster.resource_group_name}"
+
+    interpreter = ["/bin/bash", "-c"]
+  }
+}
+
+resource "null_resource" "csi_secrets_store_provider" {
+  depends_on = [null_resource.kubeconfig]
+
+  provisioner "local-exec" {
+    command = "helm repo add csi-secrets-store-provider-azure https://raw.githubusercontent.com/Azure/secrets-store-csi-driver-provider-azure/master/charts"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure  = continue
+  }
+
+  provisioner "local-exec" {
+    command = "helm install csi-secrets-store-provider-azure/csi-secrets-store-provider-azure --generate-name"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure  = continue
+  }
+}
+
+resource "null_resource" "azure_aad_pod_identity" {
+  depends_on = [null_resource.kubeconfig]
+
+  provisioner "local-exec" {
+    command = "helm repo add aad-pod-identity https://raw.githubusercontent.com/Azure/aad-pod-identity/master/charts"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure  = continue
+  }
+
+  provisioner "local-exec" {
+    command = "helm install pod-identity aad-pod-identity/aad-pod-identity"
+
+    interpreter = ["/bin/bash", "-c"]
+    on_failure  = continue
+  }
+}
+
 
 
 ### Pod Identity permissions on KeyVault
@@ -188,45 +217,17 @@ resource "azurerm_key_vault_access_policy" "identity_get" {
   object_id      = azurerm_user_assigned_identity.identity.client_id
   application_id = azurerm_user_assigned_identity.identity.client_id
 
-  key_permissions = [
-    "get",
-  ]
+  key_permissions = ["get"]
 
-  secret_permissions = [
-    "get",
-  ]
+  secret_permissions = ["get"]
 }
-
-/* Not need because the cluster delete will also delete these resources
-resource "null_resource" "kubectl_delete" {
-  triggers = {
-    secretProvider_yaml = local.secretProvider_yaml
-    aadpodidentity_yaml =local.aadpodidentity_yaml
-  }
-
-  provisioner "local-exec" {
-    when = destroy
-    command = "kubectl delete -f - <<EOF\n${self.triggers.secretProvider_yaml}\nEOF"
-
-    interpreter = ["/bin/bash", "-c"]
-    on_failure = continue
-  }
-
-  provisioner "local-exec" {
-    when = destroy
-    command = "kubectl delete -f - <<EOF\n${self.triggers.aadpodidentity_yaml}\nEOF"
-
-    interpreter = ["/bin/bash", "-c"]
-    on_failure = continue
-  }
-}*/
 
 resource "null_resource" "kubectl_apply" {
   triggers = {
     always_run = timestamp()
   }
 
-  depends_on = [azurerm_kubernetes_cluster.k8s_cluster]
+  depends_on = [azurerm_kubernetes_cluster.k8s_cluster, null_resource.csi_secrets_store_provider, null_resource.azure_aad_pod_identity]
 
   provisioner "local-exec" {
     command     = "kubectl apply -f - <<EOF\n${local.secretProvider_yaml}\nEOF"
