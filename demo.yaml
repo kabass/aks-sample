@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Pod","metadata":{"annotations":{},"labels":{"aadpodidbinding":"poc-aks-pod-identity-binding"},"name":"demo","namespace":"default"},"spec":{"containers":[{"args":["--subscriptionid=b257a86c-9b05-45ac-b405-69a297df5ee2","--clientid=1fef20d5-f931-4e4b-be1b-facba895fffb","--resourcegroup=poc_aks_others_rg"],"env":[{"name":"MY_POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"MY_POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}},{"name":"MY_POD_IP","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}],"image":"mcr.microsoft.com/oss/azure/aad-pod-identity/demo:v1.7.0","name":"demo"}]}}
+  creationTimestamp: "2020-11-19T09:12:08Z"
+  labels:
+    aadpodidbinding: poc-aks-selector
+  name: demo
+  namespace: default
+  resourceVersion: "19187"
+  selfLink: /api/v1/namespaces/default/pods/demo
+  uid: f181a356-c671-4ac4-b4be-c674c1622117
+spec:
+  containers:
+  - args:
+    - --subscriptionid=b257a86c-9b05-45ac-b405-69a297df5ee2
+    - --clientid=98ac3a51-2478-4cb2-b276-502a074e3e8a
+    - --resourcegroup=poc_aks_rg
+    env:
+    - name: MY_POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: MY_POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.podIP
+    image: mcr.microsoft.com/oss/azure/aad-pod-identity/demo:v1.7.0
+    imagePullPolicy: IfNotPresent
+    name: demo
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: default-token-6gm87
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: aks-pocakspool-45622729-vmss000000
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: default-token-6gm87
+    secret:
+      defaultMode: 420
+      secretName: default-token-6gm87
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2020-11-19T09:12:08Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2020-11-19T09:12:11Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2020-11-19T09:12:11Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2020-11-19T09:12:08Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://ff35adf0167ad5cb1e37f336e9349c34c04c065f58e3bcb9e9f7a7b066689f07
+    image: mcr.microsoft.com/oss/azure/aad-pod-identity/demo:v1.7.0
+    imageID: docker-pullable://mcr.microsoft.com/oss/azure/aad-pod-identity/demo@sha256:709bb5f7d0dcc16d6732c859ff9f226e1119d3dfd153435d9a1fb8ea73638ca5
+    lastState: {}
+    name: demo
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2020-11-19T09:12:11Z"
+  hostIP: 10.240.0.4
+  phase: Running
+  podIP: 10.240.0.12
+  podIPs:
+  - ip: 10.240.0.12
+  qosClass: BestEffort
+  startTime: "2020-11-19T09:12:08Z"
